@@ -348,14 +348,6 @@ LATER        Protocol v2
 
 ---
 
-## Built By
-
-**Vilansh Sharma** — Product Manager & Lead Engineer
-
-B.Tech Mechanical Engineering, LNMIIT Jaipur. Previously co-founded Buyfy India (20K+ MAUs), built MiWeldKart (B2B industrial marketplace), and contributed AI engineering to BitTrust (AI-to-AI reputation API, DoraHacks). Acredo is an attempt to bring proper credit infrastructure to Bitcoin DeFi.
-
----
-
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.
