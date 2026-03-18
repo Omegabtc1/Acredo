@@ -15,13 +15,12 @@ function fmt(n: number, opts?: Intl.NumberFormatOptions) {
 export default function ProfilePage() {
   const { address, bnsName, isConnected, reputationScore, reputationTier } = useWallet();
 
-  const history = React.useMemo(
-    () =>
-      [...loanHistory].sort(
-        (a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)
-      ),
-    []
-  );
+  const history = React.useMemo(() => {
+    const source = loanHistory ?? [];
+    return [...source].sort(
+      (a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)
+    );
+  }, []);
 
   const totalBorrowedSBTC = history
     .filter((h) => h.symbol === "SBTC")
