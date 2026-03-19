@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+/* Phase 2: design tokens (dark-first) */
+:root {
+  /* near-black background + dark surfaces */
+  --background: #070a0f;
+  --surface: #0b1220;
+  --surface-2: #0f172a;
+  --border: rgba(255, 255, 255, 0.08);
+
+  /* text */
+  --foreground: #e5e7eb;
+  --muted: rgba(229, 231, 235, 0.65);
+
+  /* brand / semantic */
+  --primary: #4f46e5; /* indigo */
+  --accent: #22d3ee; /* cyan */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Phase 1: minimal base styling for app shell */
+* {
+  min-width: 0;
+}
+
+html,
+body {
+  height: 100%;
+}

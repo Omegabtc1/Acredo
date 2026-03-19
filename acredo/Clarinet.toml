@@ -1,0 +1,23 @@
+[project]
+name = "acredo"
+authors = []
+description = "Acredo structured credit protocol"
+telemetry = false
+
+[contracts.reputation]
+path = "contracts/reputation.clar"
+
+[contracts.loan-factory]
+path = "contracts/loan-factory.clar"
+
+[contracts.loan]
+path = "contracts/loan.clar"
+
+[contracts.nft-escrow]
+path = "contracts/nft-escrow.clar"
+
+[contracts.yield-vault]
+path = "contracts/yield-vault.clar"
+
+[contracts.liquidity-pool]
+path = "contracts/liquidity-pool.clar"
