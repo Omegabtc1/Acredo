@@ -180,7 +180,7 @@ export default function DashboardPage() {
                       l.principal.symbol === "SBTC"
                         ? `${fmt(l.principal.amount, { maximumFractionDigits: 4 })} SBTC`
                         : `${fmt(l.principal.amount, { maximumFractionDigits: 2 })} USDCX`;
-                    const due = new Date(l.dueDate).toLocaleDateString();
+                    const due = new Date(l.dueDate).toLocaleDateString("en-US");
                     const statusVariant =
                       l.status === "active" ? "accent" : l.status === "repaid" ? "success" : "danger";
 
