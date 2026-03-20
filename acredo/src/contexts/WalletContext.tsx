@@ -31,10 +31,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const handleConnect = React.useCallback(async () => {
   setIsConnecting(true);
   try {
-    const response = await connect({
-  appName: "Acredo",
-  appIconUrl: typeof window !== "undefined" ? window.location.origin + "/acredo-logo.svg" : "",
-}) as any;
+    const response = await connect() as any;
 
     const addr = response?.addresses?.find((a: any) => a.type === "p2wpkh")?.address
       ?? response?.addresses?.[0]?.address
