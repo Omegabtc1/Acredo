@@ -29,33 +29,30 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   }, [wallet.address, setWallet]);
 
   const handleConnect = React.useCallback(async () => {
-  setIsConnecting(true);
-  try {
-    const response = await connect() as any;
-
-    const addr = (response as any)?.addresses?.[0]?.address ?? "";
-
-    if (addr) {
-      setWallet({ address: addr, bnsName: null, isConnected: true });
-      const { score, tier } = await getReputationScore(addr);
-      setWallet({ reputationScore: score, reputationTier: tier as ReputationTier });
-    } else {
-      // fallback — wallet connected but address parsing failed
-      setWallet({ address: "connected", bnsName: null, isConnected: true, reputationScore: 780, reputationTier: "A" });
+    setIsConnecting(true);
+    try {
+      const response = await connect() as any;
+      const addr = response?.addresses?.find((a: any) => a.symbol === "STX")?.address ?? "";
+      if (addr) {
+        setWallet({ address: addr, bnsName: null, isConnected: true });
+        const { score, tier } = await getReputationScore(addr);
+        setWallet({ reputationScore: score, reputationTier: tier as ReputationTier });
+      } else {
+        setWallet({ address: "connected", bnsName: null, isConnected: true, reputationScore: 780, reputationTier: "A" });
+      }
+    } catch {
+      // ignore cancel
+    } finally {
+      setIsConnecting(false);
     }
-  } catch {
-    // ignore cancel
-  } finally {
-    setIsConnecting(false);
-  }
-}, [setWallet]);
+  }, [setWallet]);
 
   const handleDisconnect = React.useCallback(() => {
     try { stacksDisconnect(); } catch { /* ignore */ }
     setWalletState(initialWalletState);
   }, []);
 
-  // Auto-reconnect
+  // Auto-reconnect on page load if previously connected
   React.useEffect(() => {
     try {
       if (isConnected()) {
