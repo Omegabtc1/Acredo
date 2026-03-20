@@ -92,7 +92,7 @@ export default function BorrowPage() {
   const nftMaxBorrow = (selectedNft?.floorPriceSBTC ?? 0) * 0.4; // STRICT: floor × 0.4
   const nftValid = isConnected && nftLocked && nftAmountNum > 0 && nftAmountNum <= nftMaxBorrow;
 
-  const depositUSDCX = vaultPosition.depositUSDCX; // USDCX ONLY
+  const [depositUSDCX, setDepositUSDCX] = React.useState(vaultPosition.depositUSDCX);
   const apy = vaultPosition.apy;
   const projYield = projectedYield(depositUSDCX, apy, yieldDuration);
   const yieldBorrowLimit = projYield * 0.5; // STRICT

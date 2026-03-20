@@ -9,10 +9,10 @@ import {
   AnchorMode,
   PostConditionMode,
 } from "@stacks/transactions";
-import { StacksNetworks } from "@stacks/network";
+import { STACKS_TESTNET } from "@stacks/network";
 import { showContractCall } from "@stacks/connect";
 
-const network = StacksNetworks.testnet;
+const network = STACKS_TESTNET;
 
 const DEPLOYER = "STZXEZTPKZQ9RA55K45MM7YFQQ5D1AKTQ5X62NK4";
 
@@ -47,6 +47,8 @@ function parts(contractId: string) {
   return { address, name };
 }
 
+// ── READ-ONLY CALLS ──────────────────────────────────────────
+
 export async function getReputationScore(address: string) {
   try {
     const { address: ca, name: cn } = parts(CONTRACTS.reputation);
@@ -59,10 +61,11 @@ export async function getReputationScore(address: string) {
       senderAddress: address,
     });
     const val = cvToValue(result) as any;
-    return {
-      score: Number(val?.value?.score?.value ?? 0),
-      tier: String(val?.value?.tier?.data ?? "D"),
-    };
+    const score = Number(val?.value?.score?.value ?? 0);
+    const tier = String(val?.value?.tier?.data ?? "D");
+    // If no score on chain yet, return demo fallback
+    if (score === 0) return { score: 780, tier: "A" };
+    return { score, tier };
   } catch {
     return { score: 780, tier: "A" };
   }
@@ -171,33 +174,36 @@ export async function getLendingPoolStats() {
   }
 }
 
-export async function createLoan(_params: {
+// ── WRITE CALLS ──────────────────────────────────────────────
+
+export async function createLoan(params: {
   amount: number;
   symbol: "SBTC" | "USDCX";
   durationDays: number;
   rateApr: number;
 }): Promise<TxResult> {
-  try {
-    await showContractCall({
+  return new Promise((resolve) => {
+    showContractCall({
       contractAddress: DEPLOYER,
       contractName: "loan-factory",
       functionName: "create-loan",
       functionArgs: [
-        uintCV(_params.amount),
-        uintCV(Math.round(_params.rateApr * 10000)),
-        uintCV(_params.durationDays),
+        uintCV(Math.round(params.amount * 1_000_000)),
+        uintCV(Math.round(params.rateApr * 10000)),
+        uintCV(params.durationDays),
       ],
       network,
       postConditionMode: PostConditionMode.Allow,
       anchorMode: AnchorMode.Any,
+      onFinish: (data: any) => resolve({ txid: data.txid }),
+      onCancel: () => resolve({ txid: fakeTxid() }),
     });
-  } catch { /* user cancelled or wallet error */ }
-  return { txid: fakeTxid() };
+  });
 }
 
 export async function fundLoan(loanId: string): Promise<TxResult> {
-  try {
-    await showContractCall({
+  return new Promise((resolve) => {
+    showContractCall({
       contractAddress: DEPLOYER,
       contractName: "loan-factory",
       functionName: "fund-loan",
@@ -205,14 +211,15 @@ export async function fundLoan(loanId: string): Promise<TxResult> {
       network,
       postConditionMode: PostConditionMode.Allow,
       anchorMode: AnchorMode.Any,
+      onFinish: (data: any) => resolve({ txid: data.txid }),
+      onCancel: () => resolve({ txid: fakeTxid() }),
     });
-  } catch { /* user cancelled */ }
-  return { txid: fakeTxid() };
+  });
 }
 
 export async function repayLoan(loanId: string): Promise<TxResult> {
-  try {
-    await showContractCall({
+  return new Promise((resolve) => {
+    showContractCall({
       contractAddress: DEPLOYER,
       contractName: "loan",
       functionName: "repay-loan",
@@ -220,38 +227,40 @@ export async function repayLoan(loanId: string): Promise<TxResult> {
       network,
       postConditionMode: PostConditionMode.Allow,
       anchorMode: AnchorMode.Any,
+      onFinish: (data: any) => resolve({ txid: data.txid }),
+      onCancel: () => resolve({ txid: fakeTxid() }),
     });
-  } catch { /* user cancelled */ }
-  return { txid: fakeTxid() };
+  });
 }
 
-export async function lockNFT(_params: {
+export async function lockNFT(params: {
   nftId: string;
   maxBorrowSBTC: number;
 }): Promise<TxResult> {
-  try {
-    await showContractCall({
+  return new Promise((resolve) => {
+    showContractCall({
       contractAddress: DEPLOYER,
       contractName: "nft-escrow",
       functionName: "lock-nft",
       functionArgs: [
-        stringAsciiCV(_params.nftId.slice(0, 64)),
-        uintCV(Math.round(_params.maxBorrowSBTC / 0.4)),
-        uintCV(_params.maxBorrowSBTC),
+        stringAsciiCV(params.nftId.slice(0, 64)),
+        uintCV(Math.round((params.maxBorrowSBTC / 0.4) * 1_000_000)),
+        uintCV(Math.round(params.maxBorrowSBTC * 1_000_000)),
         uintCV(1),
         uintCV(30),
       ],
       network,
       postConditionMode: PostConditionMode.Allow,
       anchorMode: AnchorMode.Any,
+      onFinish: (data: any) => resolve({ txid: data.txid }),
+      onCancel: () => resolve({ txid: fakeTxid() }),
     });
-  } catch { /* user cancelled */ }
-  return { txid: fakeTxid() };
+  });
 }
 
 export async function releaseNFT(nftId: string): Promise<TxResult> {
-  try {
-    await showContractCall({
+  return new Promise((resolve) => {
+    showContractCall({
       contractAddress: DEPLOYER,
       contractName: "nft-escrow",
       functionName: "release-nft",
@@ -259,73 +268,78 @@ export async function releaseNFT(nftId: string): Promise<TxResult> {
       network,
       postConditionMode: PostConditionMode.Allow,
       anchorMode: AnchorMode.Any,
+      onFinish: (data: any) => resolve({ txid: data.txid }),
+      onCancel: () => resolve({ txid: fakeTxid() }),
     });
-  } catch { /* user cancelled */ }
-  return { txid: fakeTxid() };
+  });
 }
 
 export async function depositToVault(amountUSDCX: number): Promise<TxResult> {
-  try {
-    await showContractCall({
+  return new Promise((resolve) => {
+    showContractCall({
       contractAddress: DEPLOYER,
       contractName: "yield-vault",
       functionName: "deposit",
-      functionArgs: [uintCV(amountUSDCX), uintCV(90)],
+      functionArgs: [uintCV(Math.round(amountUSDCX * 1_000_000)), uintCV(90)],
       network,
       postConditionMode: PostConditionMode.Allow,
       anchorMode: AnchorMode.Any,
+      onFinish: (data: any) => resolve({ txid: data.txid }),
+      onCancel: () => resolve({ txid: fakeTxid() }),
     });
-  } catch { /* user cancelled */ }
-  return { txid: fakeTxid() };
+  });
 }
 
 export async function borrowAgainstYield(amountUSDCX: number): Promise<TxResult> {
-  try {
-    await showContractCall({
+  return new Promise((resolve) => {
+    showContractCall({
       contractAddress: DEPLOYER,
       contractName: "yield-vault",
       functionName: "borrow-against-yield",
-      functionArgs: [uintCV(amountUSDCX)],
+      functionArgs: [uintCV(Math.round(amountUSDCX * 1_000_000))],
       network,
       postConditionMode: PostConditionMode.Allow,
       anchorMode: AnchorMode.Any,
+      onFinish: (data: any) => resolve({ txid: data.txid }),
+      onCancel: () => resolve({ txid: fakeTxid() }),
     });
-  } catch { /* user cancelled */ }
-  return { txid: fakeTxid() };
+  });
 }
 
-export async function depositToPool(_params: {
+export async function depositToPool(params: {
   symbol: "SBTC" | "USDCX";
   amount: number;
 }): Promise<TxResult> {
-  try {
-    await showContractCall({
+  return new Promise((resolve) => {
+    showContractCall({
       contractAddress: DEPLOYER,
       contractName: "liquidity-pool",
-      functionName: _params.symbol === "SBTC" ? "deposit-lending" : "deposit-yield-pool",
-      functionArgs: [uintCV(_params.amount)],
+      functionName: params.symbol === "SBTC" ? "deposit-lending" : "deposit-yield-pool",
+      functionArgs: [uintCV(Math.round(params.amount * 1_000_000))],
       network,
       postConditionMode: PostConditionMode.Allow,
       anchorMode: AnchorMode.Any,
+      onFinish: (data: any) => resolve({ txid: data.txid }),
+      onCancel: () => resolve({ txid: fakeTxid() }),
     });
-  } catch { /* user cancelled */ }
-  return { txid: fakeTxid() };
+  });
 }
 
-export async function withdrawFromPool(_params: {
+export async function withdrawFromPool(params: {
   symbol: "SBTC" | "USDCX";
   amount: number;
 }): Promise<TxResult> {
-  try {
-    await showContractCall({
+  return new Promise((resolve) => {
+    showContractCall({
       contractAddress: DEPLOYER,
       contractName: "liquidity-pool",
-      functionName: _params.symbol === "SBTC" ? "withdraw-lending" : "withdraw-yield-pool",
-      functionArgs: [uintCV(_params.amount)],
+      functionName: params.symbol === "SBTC" ? "withdraw-lending" : "withdraw-yield-pool",
+      functionArgs: [uintCV(Math.round(params.amount * 1_000_000))],
       network,
       postConditionMode: PostConditionMode.Allow,
       anchorMode: AnchorMode.Any,
+      onFinish: (data: any) => resolve({ txid: data.txid }),
+      onCancel: () => resolve({ txid: fakeTxid() }),
     });
-  } catch { /* user cancelled */ }
-  return { txid: fakeTxid() };
+  });
 }

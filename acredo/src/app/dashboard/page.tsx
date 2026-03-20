@@ -17,25 +17,28 @@ export default function DashboardPage() {
   const { pushTxToast } = useTxToasts();
   const { isConnected, isConnecting, reputationScore, reputationTier } = useWallet();
   const [repaying, setRepaying] = React.useState<Record<string, boolean>>({});
+  const [loans, setLoans] = React.useState(activeLoans ?? []);
+  const [totalDeposited, setTotalDeposited] = React.useState(vaultPosition.depositUSDCX);
 
   const active = React.useMemo(
-    () => (activeLoans ?? []).filter((l) => l.status === "active"),
-    []
+    () => loans.filter((l) => l.status === "active"),
+    [loans]
   );
 
   const borrowLimitSBTC = React.useMemo(() => {
-    // Not specified in product spec; derived from score only (0..0.75 SBTC).
     const pct = Math.max(0, Math.min(1, reputationScore / 1000));
     return pct * 0.75;
   }, [reputationScore]);
-
-  const totalDepositedUSDCX = vaultPosition.depositUSDCX;
 
   async function onRepay(loanId: string) {
     setRepaying((p) => ({ ...p, [loanId]: true }));
     try {
       const { txid } = await repayLoan(loanId);
       pushTxToast("Repay loan", txid);
+      // Mark loan as repaid in local state after tx submitted
+      setLoans((prev) =>
+        prev.map((l) => l.id === loanId ? { ...l, status: "repaid" as const } : l)
+      );
     } finally {
       setRepaying((p) => ({ ...p, [loanId]: false }));
     }
@@ -96,7 +99,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardDescription>Total Deposited (USDCX)</CardDescription>
             <CardTitle className="text-2xl tabular-nums">
-              {isConnected ? fmt(totalDepositedUSDCX, { maximumFractionDigits: 2 }) : "—"}
+              {isConnected ? fmt(totalDeposited, { maximumFractionDigits: 2 }) : "—"}
             </CardTitle>
           </CardHeader>
         </Card>
@@ -140,7 +143,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-
               {!isConnected ? (
                 <div className="rounded-lg border border-border bg-surface-2 p-3 text-sm text-muted">
                   Connect your wallet to unlock live limits and actions.
@@ -183,7 +185,6 @@ export default function DashboardPage() {
                     const due = new Date(l.dueDate).toLocaleDateString("en-US");
                     const statusVariant =
                       l.status === "active" ? "accent" : l.status === "repaid" ? "success" : "danger";
-
                     return (
                       <tr key={l.id} className="border-b border-border/60">
                         <td className="py-3 pr-3 capitalize">{l.type}</td>
@@ -199,7 +200,7 @@ export default function DashboardPage() {
                           <Button
                             variant="secondary"
                             size="sm"
-                            disabled={!isConnected || repaying[l.id]}
+                            disabled={!isConnected || repaying[l.id] || l.status !== "active"}
                             onClick={() => onRepay(l.id)}
                           >
                             {repaying[l.id] ? "Repaying…" : "Repay"}
@@ -217,9 +218,6 @@ export default function DashboardPage() {
                   ) : null}
                 </tbody>
               </table>
-            </div>
-            <div className="mt-3 text-xs text-muted">
-              Transactions call `contracts.ts` and surface via `TransactionToast`.
             </div>
           </CardContent>
         </Card>

@@ -3,6 +3,7 @@ export function clamp(n: number, min: number, max: number) {
 }
 
 export function formatTxHash(txid: string) {
+  if (!txid) return "0x000000…0000";
   const clean = txid.replace(/^0x/i, "");
   const head = clean.slice(0, 6);
   const tail = clean.slice(-4);
