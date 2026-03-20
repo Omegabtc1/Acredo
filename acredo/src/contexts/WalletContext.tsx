@@ -32,8 +32,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   setIsConnecting(true);
   try {
     const response = await connect({
-      appDetails: { name: "Acredo", icon: "/acredo-logo.svg" },
-    }) as any;
+  appName: "Acredo",
+  appIconUrl: typeof window !== "undefined" ? window.location.origin + "/acredo-logo.svg" : "",
+}) as any;
 
     const addr = response?.addresses?.find((a: any) => a.type === "p2wpkh")?.address
       ?? response?.addresses?.[0]?.address
