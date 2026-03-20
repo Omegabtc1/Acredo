@@ -33,10 +33,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   try {
     const response = await connect() as any;
 
-    const addr = response?.addresses?.find((a: any) => a.type === "p2wpkh")?.address
-      ?? response?.addresses?.[0]?.address
-      ?? response?.address
-      ?? "";
+    const addr = (response as any)?.addresses?.[0]?.address ?? "";
 
     if (addr) {
       setWallet({ address: addr, bnsName: null, isConnected: true });
@@ -63,8 +60,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     try {
       if (isConnected()) {
         const data = getLocalStorage();
-        const addr = data?.addresses?.find((a: any) => a.type === "p2wpkh")?.address
-          ?? data?.addresses?.[0]?.address ?? "";
+        const addr = data?.addresses?.stx?.[0]?.address ?? "";
         if (addr) {
           setWallet({ address: addr, isConnected: true });
           getReputationScore(addr).then(({ score, tier }) => {
