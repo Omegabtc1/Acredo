@@ -244,13 +244,21 @@ npm install
 
 # Set environment variables
 cp .env.example .env.local
-# → Add your testnet contract addresses
+# → 
+## Contract Addresses (Testnet)
+
+| Contract | Address |
+|----------|---------|
+| `reputation.clar` | `STZXEZTPKZQ9RA55K45MM7YFQQ5D1AKTQ5X62NK4.reputation` |
+| `loan-factory.clar` | `STZXEZTPKZQ9RA55K45MM7YFQQ5D1AKTQ5X62NK4.loan-factory` |
+| `loan.clar` | `STZXEZTPKZQ9RA55K45MM7YFQQ5D1AKTQ5X62NK4.loan` |
+| `nft-escrow.clar` | `STZXEZTPKZQ9RA55K45MM7YFQQ5D1AKTQ5X62NK4.nft-escrow` |
+| `yield-vault.clar` | `STZXEZTPKZQ9RA55K45MM7YFQQ5D1AKTQ5X62NK4.yield-vault` |
+| `liquidity-pool.clar` | `STZXEZTPKZQ9RA55K45MM7YFQQ5D1AKTQ5X62NK4.liquidity-pool` |
 
 # Start dev server
 npm run dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) and connect your Hiro Wallet.
 
 ### Deploy to Testnet
 
@@ -329,7 +337,7 @@ The full demo walks through all three borrowing models in order:
 
 ```
 NOW          Hackathon MVP
-             ├── All 5 contracts on testnet ✓
+             ├── All 6 contracts on testnet ✓
              ├── Full 3-model borrow flow ✓
              └── End-to-end demo working ✓
 
