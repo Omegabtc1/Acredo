@@ -8,6 +8,11 @@ import { Sidebar } from "@/components/layout/Sidebar";
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "/dashboard";
 
+  // Landing page manages its own full-page layout
+  if (pathname === "/") {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <div className="mx-auto flex min-h-dvh max-w-[1440px]">

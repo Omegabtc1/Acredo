@@ -20,8 +20,16 @@ export function Sidebar({
       )}
     >
       <div className="flex h-16 items-center px-4">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-400" />
+        <div className="flex items-center gap-2.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/acredo-icon.jpg"
+            alt="Acredo"
+            width={32}
+            height={32}
+            className="rounded-lg"
+            style={{ objectFit: "cover" }}
+          />
           <div className="leading-tight">
             <div className="text-sm font-semibold">Acredo</div>
             <div className="text-xs text-muted">DeFi Console</div>
