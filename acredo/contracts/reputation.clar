@@ -1,10 +1,10 @@
 ;; ============================================================
-;; ACREDO — reputation.clar
+;; ACREDO - reputation.clar
 ;; Stores on-chain reputation scores, tiers, and default history.
 ;; All other contracts read from this one. Nothing calls OUT from here.
 ;; ============================================================
 
-;; ─── CONSTANTS ───────────────────────────────────────────────
+;; --- CONSTANTS -----------------------------------------------
 
 (define-constant CONTRACT-OWNER tx-sender)
 
@@ -27,9 +27,9 @@
 ;; Default penalty applied to score
 (define-constant DEFAULT-PENALTY u100)
 
-;; ─── DATA MAPS ───────────────────────────────────────────────
+;; --- DATA MAPS -----------------------------------------------
 
-;; Primary score store: principal → score (0–1000)
+;; Primary score store: principal -> score (0-1000)
 (define-map scores
   principal
   { score: uint, defaults: uint }
@@ -38,7 +38,7 @@
 ;; Authorised writers (loan contract will be added here)
 (define-map authorised-writers principal bool)
 
-;; ─── PRIVATE HELPERS ─────────────────────────────────────────
+;; --- PRIVATE HELPERS -----------------------------------------
 
 (define-private (is-owner)
   (is-eq tx-sender CONTRACT-OWNER)
@@ -77,7 +77,7 @@
   )
 )
 
-;; ─── ADMIN ───────────────────────────────────────────────────
+;; --- ADMIN ---------------------------------------------------
 
 ;; Grant write access to a contract (e.g. loan.clar)
 (define-public (add-authorised-writer (writer principal))
@@ -97,9 +97,9 @@
   )
 )
 
-;; ─── WRITE FUNCTIONS ─────────────────────────────────────────
+;; --- WRITE FUNCTIONS -----------------------------------------
 
-;; Set or update a user's reputation score (0–1000)
+;; Set or update a user's reputation score (0-1000)
 ;; Called by off-chain oracle or admin after computing score
 (define-public (store-score (user principal) (score uint))
   (begin
@@ -115,7 +115,7 @@
   )
 )
 
-;; Record a default event — reduces score and increments default counter
+;; Record a default event - reduces score and increments default counter
 ;; Called by loan.clar when a loan passes its deadline unpaid
 (define-public (record-default (user principal))
   (begin
@@ -136,7 +136,7 @@
   )
 )
 
-;; ─── READ-ONLY FUNCTIONS ─────────────────────────────────────
+;; --- READ-ONLY FUNCTIONS -------------------------------------
 
 ;; Get raw score and default count for a user
 (define-read-only (get-score (user principal))

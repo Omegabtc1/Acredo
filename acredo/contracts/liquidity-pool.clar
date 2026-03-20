@@ -1,10 +1,10 @@
 ;; ============================================================
-;; ACREDO — liquidity-pool.clar
+;; ACREDO - liquidity-pool.clar
 ;; Manages LP capital for both the lending pool (sBTC) and
 ;; the yield borrow pool (USDCx). Borrowers draw from here.
 ;; ============================================================
 
-;; ─── CONSTANTS ───────────────────────────────────────────────
+;; --- CONSTANTS -----------------------------------------------
 
 (define-constant CONTRACT-OWNER tx-sender)
 
@@ -18,11 +18,11 @@
 ;; 1% origination fee (basis points out of 10000)
 (define-constant ORIGINATION-FEE-BPS u100)
 
-;; ─── FUNGIBLE TOKEN TRAITS ───────────────────────────────────
+;; --- FUNGIBLE TOKEN TRAITS -----------------------------------
 ;; We use STX as a stand-in for sBTC and USDCx in the MVP.
 ;; In production these would be SIP-010 token calls.
 
-;; ─── DATA VARS ───────────────────────────────────────────────
+;; --- DATA VARS -----------------------------------------------
 
 ;; Total sBTC in lending pool (micro-sBTC)
 (define-data-var lending-pool-total uint u0)
@@ -40,18 +40,18 @@
 (define-data-var treasury-sbtc uint u0)
 (define-data-var treasury-usdcx uint u0)
 
-;; ─── DATA MAPS ───────────────────────────────────────────────
+;; --- DATA MAPS -----------------------------------------------
 
-;; LP positions in lending pool: principal → deposited micro-sBTC
+;; LP positions in lending pool: principal -> deposited micro-sBTC
 (define-map lending-positions principal uint)
 
-;; LP positions in yield pool: principal → deposited micro-USDCx
+;; LP positions in yield pool: principal -> deposited micro-USDCx
 (define-map yield-positions principal uint)
 
 ;; Authorised callers (loan.clar, yield-vault.clar)
 (define-map authorised-callers principal bool)
 
-;; ─── PRIVATE HELPERS ─────────────────────────────────────────
+;; --- PRIVATE HELPERS -----------------------------------------
 
 (define-private (is-owner)
   (is-eq tx-sender CONTRACT-OWNER)
@@ -68,7 +68,7 @@
   (/ (* amount ORIGINATION-FEE-BPS) u10000)
 )
 
-;; ─── ADMIN ───────────────────────────────────────────────────
+;; --- ADMIN ---------------------------------------------------
 
 (define-public (add-authorised-caller (caller principal))
   (begin
@@ -86,13 +86,13 @@
   )
 )
 
-;; ─── LENDING POOL (sBTC) ─────────────────────────────────────
+;; --- LENDING POOL (sBTC) -------------------------------------
 
 ;; LP deposits sBTC into the lending pool
 (define-public (deposit-lending (amount uint))
   (begin
     (asserts! (> amount u0) ERR-ZERO-AMOUNT)
-    ;; In production: (try! (contract-call? .sbtc transfer amount tx-sender (as-contract tx-sender) none))
+    ;; In production: (try! (contract-call- .sbtc transfer amount tx-sender (as-contract tx-sender) none))
     (let ((existing (default-to u0 (map-get? lending-positions tx-sender))))
       (map-set lending-positions tx-sender (+ existing amount))
       (var-set lending-pool-total (+ (var-get lending-pool-total) amount))
@@ -113,7 +113,7 @@
       (asserts! (>= available amount) ERR-INSUFFICIENT-FUNDS)
       (map-set lending-positions tx-sender (- existing amount))
       (var-set lending-pool-total (- (var-get lending-pool-total) amount))
-      ;; In production: (try! (contract-call? .sbtc transfer amount (as-contract tx-sender) tx-sender none))
+      ;; In production: (try! (contract-call- .sbtc transfer amount (as-contract tx-sender) tx-sender none))
       (ok amount)
     )
   )
@@ -154,13 +154,13 @@
   )
 )
 
-;; ─── YIELD POOL (USDCx) ──────────────────────────────────────
+;; --- YIELD POOL (USDCx) --------------------------------------
 
 ;; LP deposits USDCx into the yield pool
 (define-public (deposit-yield-pool (amount uint))
   (begin
     (asserts! (> amount u0) ERR-ZERO-AMOUNT)
-    ;; In production: (try! (contract-call? .usdcx transfer amount tx-sender (as-contract tx-sender) none))
+    ;; In production: (try! (contract-call- .usdcx transfer amount tx-sender (as-contract tx-sender) none))
     (let ((existing (default-to u0 (map-get? yield-positions tx-sender))))
       (map-set yield-positions tx-sender (+ existing amount))
       (var-set yield-pool-total (+ (var-get yield-pool-total) amount))
@@ -181,7 +181,7 @@
       (asserts! (>= available amount) ERR-INSUFFICIENT-FUNDS)
       (map-set yield-positions tx-sender (- existing amount))
       (var-set yield-pool-total (- (var-get yield-pool-total) amount))
-      ;; In production: (try! (contract-call? .usdcx transfer amount (as-contract tx-sender) tx-sender none))
+      ;; In production: (try! (contract-call- .usdcx transfer amount (as-contract tx-sender) tx-sender none))
       (ok amount)
     )
   )
@@ -222,7 +222,7 @@
   )
 )
 
-;; ─── READ-ONLY ────────────────────────────────────────────────
+;; --- READ-ONLY ------------------------------------------------
 
 (define-read-only (get-lending-pool-stats)
   (ok {

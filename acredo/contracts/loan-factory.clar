@@ -1,11 +1,11 @@
 ;; ============================================================
-;; ACREDO — loan-factory.clar
+;; ACREDO - loan-factory.clar
 ;; Creates and indexes loan instances.
 ;; Checks reputation limits before allowing loan creation.
 ;; Calls liquidity-pool.clar to disburse funds.
 ;; ============================================================
 
-;; ─── CONSTANTS ───────────────────────────────────────────────
+;; --- CONSTANTS -----------------------------------------------
 
 (define-constant CONTRACT-OWNER tx-sender)
 
@@ -19,7 +19,7 @@
 (define-constant ERR-LOAN-EXISTS         (err u307))
 (define-constant ERR-POOL-CALL-FAILED    (err u308))
 
-;; Duration bounds (days, stored as blocks — approx 144 blocks/day on Stacks)
+;; Duration bounds (days, stored as blocks - approx 144 blocks/day on Stacks)
 (define-constant BLOCKS-PER-DAY u144)
 (define-constant MIN-DURATION-DAYS u7)
 (define-constant MAX-DURATION-DAYS u365)
@@ -28,13 +28,13 @@
 (define-constant MIN-RATE-BPS u500)
 (define-constant MAX-RATE-BPS u3000)
 
-;; ─── DATA VARS ───────────────────────────────────────────────
+;; --- DATA VARS -----------------------------------------------
 
 (define-data-var loan-nonce uint u0)
 
-;; ─── DATA MAPS ───────────────────────────────────────────────
+;; --- DATA MAPS -----------------------------------------------
 
-;; Loan index: loan-id (uint) → loan metadata
+;; Loan index: loan-id (uint) -> loan metadata
 (define-map loans
   uint
   {
@@ -49,14 +49,14 @@
   }
 )
 
-;; Reverse index: borrower → list of their loan IDs (max 20)
+;; Reverse index: borrower -> list of their loan IDs (max 20)
 (define-map borrower-loans principal (list 20 uint))
 
 ;; Open loan requests index (for marketplace reads)
-;; loan-id → bool (true = open)
+;; loan-id -> bool (true = open)
 (define-map open-loans uint bool)
 
-;; ─── PRIVATE HELPERS ─────────────────────────────────────────
+;; --- PRIVATE HELPERS -----------------------------------------
 
 (define-private (is-owner)
   (is-eq tx-sender CONTRACT-OWNER)
@@ -73,7 +73,7 @@
   )
 )
 
-;; ─── PUBLIC FUNCTIONS ────────────────────────────────────────
+;; --- PUBLIC FUNCTIONS ----------------------------------------
 
 ;; Create a reputation loan request
 ;; borrower must have sufficient reputation score (checked via reputation.clar)
@@ -157,7 +157,7 @@
   )
 )
 
-;; ─── READ-ONLY ────────────────────────────────────────────────
+;; --- READ-ONLY ------------------------------------------------
 
 (define-read-only (get-loan (loan-id uint))
   (ok (map-get? loans loan-id))

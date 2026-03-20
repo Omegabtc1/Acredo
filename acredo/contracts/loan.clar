@@ -1,12 +1,12 @@
 ;; ============================================================
-;; ACREDO — loan.clar
-;; Handles the full loan lifecycle: fund → repay → default.
+;; ACREDO - loan.clar
+;; Handles the full loan lifecycle: fund -> repay -> default.
 ;; Calls reputation.clar on default.
 ;; Calls liquidity-pool.clar on repayment.
 ;; Works in conjunction with loan-factory.clar.
 ;; ============================================================
 
-;; ─── CONSTANTS ───────────────────────────────────────────────
+;; --- CONSTANTS -----------------------------------------------
 
 (define-constant CONTRACT-OWNER tx-sender)
 
@@ -24,7 +24,7 @@
 ;; Blocks per day approximation on Stacks
 (define-constant BLOCKS-PER-DAY u144)
 
-;; ─── DATA MAPS ───────────────────────────────────────────────
+;; --- DATA MAPS -----------------------------------------------
 
 ;; Full loan state indexed by loan-id
 (define-map loan-state
@@ -43,19 +43,19 @@
   }
 )
 
-;; ─── PRIVATE HELPERS ─────────────────────────────────────────
+;; --- PRIVATE HELPERS -----------------------------------------
 
 (define-private (is-owner)
   (is-eq tx-sender CONTRACT-OWNER)
 )
 
-;; Interest = principal × rate-bps × duration-days / (365 × 10000)
-;; Integer arithmetic — rounds down
+;; Interest = principal x rate-bps x duration-days / (365 x 10000)
+;; Integer arithmetic - rounds down
 (define-private (calc-interest (principal uint) (rate-bps uint) (duration-days uint))
   (/ (* (* principal rate-bps) duration-days) (* u365 u10000))
 )
 
-;; ─── PUBLIC FUNCTIONS ────────────────────────────────────────
+;; --- PUBLIC FUNCTIONS ----------------------------------------
 
 ;; Register an active loan (called by loan-factory after funding)
 (define-public (register-loan
@@ -100,7 +100,7 @@
 
     (let ((owed (get total-owed loan)))
       ;; In production: transfer owed sBTC from borrower to contract
-      ;; (try! (contract-call? .sbtc transfer owed tx-sender (as-contract tx-sender) none))
+      ;; (try! (contract-call- .sbtc transfer owed tx-sender (as-contract tx-sender) none))
 
       ;; Return funds to pool
       (unwrap! (contract-call? .liquidity-pool receive-repayment-sbtc owed) ERR-CALL-FAILED)
@@ -116,7 +116,7 @@
   )
 )
 
-;; Trigger default — callable by anyone once due-height has passed
+;; Trigger default - callable by anyone once due-height has passed
 (define-public (trigger-default (loan-id uint))
   (let (
     (loan (unwrap! (map-get? loan-state loan-id) ERR-LOAN-NOT-FOUND))
@@ -134,7 +134,7 @@
   )
 )
 
-;; ─── READ-ONLY ────────────────────────────────────────────────
+;; --- READ-ONLY ------------------------------------------------
 
 (define-read-only (get-loan-state (loan-id uint))
   (ok (map-get? loan-state loan-id))

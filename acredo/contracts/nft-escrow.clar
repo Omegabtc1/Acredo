@@ -1,12 +1,12 @@
 ;; ============================================================
-;; ACREDO — nft-escrow.clar
+;; ACREDO - nft-escrow.clar
 ;; Locks NFT collateral during a loan.
 ;; Releases to borrower on repayment.
 ;; Transfers to lender on default.
 ;; LTV = 40% of floor price (enforced here).
 ;; ============================================================
 
-;; ─── CONSTANTS ───────────────────────────────────────────────
+;; --- CONSTANTS -----------------------------------------------
 
 (define-constant CONTRACT-OWNER tx-sender)
 
@@ -26,9 +26,9 @@
 ;; LTV = 40% expressed as basis points (4000 / 10000)
 (define-constant LTV-BPS u4000)
 
-;; ─── DATA MAPS ───────────────────────────────────────────────
+;; --- DATA MAPS -----------------------------------------------
 
-;; Escrow record: nft-id (string) → escrow details
+;; Escrow record: nft-id (string) -> escrow details
 (define-map escrow
   (string-ascii 64)
   {
@@ -46,7 +46,7 @@
 ;; Authorised callers (loan-factory, loan contracts)
 (define-map authorised-callers principal bool)
 
-;; ─── PRIVATE HELPERS ─────────────────────────────────────────
+;; --- PRIVATE HELPERS -----------------------------------------
 
 (define-private (is-owner)
   (is-eq tx-sender CONTRACT-OWNER)
@@ -59,12 +59,12 @@
   )
 )
 
-;; max-borrow = floor-price × LTV-BPS / 10000
+;; max-borrow = floor-price x LTV-BPS / 10000
 (define-private (calc-max-borrow (floor-price uint))
   (/ (* floor-price LTV-BPS) u10000)
 )
 
-;; ─── ADMIN ───────────────────────────────────────────────────
+;; --- ADMIN ---------------------------------------------------
 
 (define-public (add-authorised-caller (caller principal))
   (begin
@@ -82,11 +82,11 @@
   )
 )
 
-;; ─── PUBLIC FUNCTIONS ────────────────────────────────────────
+;; --- PUBLIC FUNCTIONS ----------------------------------------
 
 ;; Lock an NFT as collateral and draw a loan from the liquidity pool
 ;; floor-price is provided by the caller (oracle / frontend) in micro-sBTC
-;; borrow-amount must be <= floor-price × 0.40
+;; borrow-amount must be <= floor-price x 0.40
 (define-public (lock-nft
   (nft-id (string-ascii 64))
   (floor-price uint)
@@ -103,7 +103,7 @@
       (asserts! (<= borrow-amount max-borrow) ERR-EXCEEDS-LTV)
 
       (let ((due-height (+ block-height (* duration-days u144))))
-        ;; In production: (try! (contract-call? .nft-contract transfer nft-id tx-sender (as-contract tx-sender)))
+        ;; In production: (try! (contract-call- .nft-contract transfer nft-id tx-sender (as-contract tx-sender)))
 
         ;; Disburse from lending pool
         (unwrap! (contract-call? .liquidity-pool disburse-sbtc tx-sender borrow-amount) ERR-POOL-FAILED)
@@ -126,7 +126,7 @@
   )
 )
 
-;; Borrower repays — NFT released back to them
+;; Borrower repays - NFT released back to them
 (define-public (release-nft (nft-id (string-ascii 64)))
   (let (
     (record (unwrap! (map-get? escrow nft-id) ERR-NOT-LOCKED))
@@ -137,14 +137,14 @@
     ;; Repayment to pool
     (unwrap! (contract-call? .liquidity-pool receive-repayment-sbtc (get borrow-amount record)) ERR-CALL-FAILED)
 
-    ;; In production: (try! (contract-call? .nft-contract transfer nft-id (as-contract tx-sender) tx-sender))
+    ;; In production: (try! (contract-call- .nft-contract transfer nft-id (as-contract tx-sender) tx-sender))
 
     (map-set escrow nft-id (merge record { status: "released" }))
     (ok nft-id)
   )
 )
 
-;; Liquidate — callable by anyone after due-height passes unpaid
+;; Liquidate - callable by anyone after due-height passes unpaid
 ;; Transfers NFT to lender (or protocol if no lender set)
 (define-public (liquidate-nft (nft-id (string-ascii 64)))
   (let (
@@ -154,14 +154,14 @@
     (asserts! (>= block-height (get due-height record)) ERR-NOT-DEFAULTED)
 
     ;; In production: transfer NFT to lender or CONTRACT-OWNER
-    ;; (try! (contract-call? .nft-contract transfer nft-id (as-contract tx-sender) recipient))
+    ;; (try! (contract-call- .nft-contract transfer nft-id (as-contract tx-sender) recipient))
 
     (map-set escrow nft-id (merge record { status: "liquidated" }))
     (ok nft-id)
   )
 )
 
-;; ─── READ-ONLY ────────────────────────────────────────────────
+;; --- READ-ONLY ------------------------------------------------
 
 (define-read-only (get-escrow (nft-id (string-ascii 64)))
   (ok (map-get? escrow nft-id))
